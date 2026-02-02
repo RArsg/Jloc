@@ -1,0 +1,92 @@
+-- Brookhaven Mobile Anti-Sit Script
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+
+local Player = Players.LocalPlayer
+local ANTI_ENABLED = false
+
+-- إنشاء زر على الشاشة للهاتف
+local ScreenGui = Instance.new("ScreenGui")
+local ToggleButton = Instance.new("TextButton")
+
+ScreenGui.Parent = Player:WaitForChild("PlayerGui")
+
+ToggleButton.Size = UDim2.new(0, 150, 0, 50)
+ToggleButton.Position = UDim2.new(0, 20, 0, 100)
+ToggleButton.Text = "🔴 Anti-Sit OFF"
+ToggleButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+ToggleButton.TextSize = 14
+ToggleButton.Parent = ScreenGui
+
+-- دالة التبديل
+ToggleButton.MouseButton1Click:Connect(function()
+    ANTI_ENABLED = not ANTI_ENABLED
+    
+    if ANTI_ENABLED then
+        ToggleButton.Text = "🟢 Anti-Sit ON"
+        ToggleButton.BackgroundColor3 = Color3.fromRGB(50, 255, 50)
+        warn("✅ Anti-Sit enabled!")
+    else
+        ToggleButton.Text = "🔴 Anti-Sit OFF"
+        ToggleButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+        warn("❌ Anti-Sit disabled!")
+    end
+end)
+
+-- نظام الحماية
+RunService.Heartbeat:Connect(function()
+    if not ANTI_ENABLED then return end
+    
+    local character = Player.Character
+    if not character then return end
+    
+    local humanoid = character:FindFirstChild("Humanoid")
+    local rootPart = character:FindFirstChild("HumanoidRootPart")
+    
+    if humanoid and rootPart then
+        -- 1. منع الجلوس التلقائي
+        if humanoid.Sit then
+            humanoid.Jump = true
+            wait(0.1)
+            humanoid.Sit = false
+        end
+        
+        -- 2. كشف اللاعبين القريبين
+        for _, otherPlayer in pairs(Players:GetPlayers()) do
+            if otherPlayer ~= Player then
+                local otherChar = otherPlayer.Character
+                if otherChar then
+                    local otherRoot = otherChar:FindFirstChild("HumanoidRootPart")
+                    if otherRoot then
+                        local distance = (rootPart.Position - otherRoot.Position).Magnitude
+                        
+                        -- إذا كان قريب جداً
+                        if distance < 5 then
+                            -- قفز لتجنبه
+                            humanoid.Jump = true
+                            
+                            -- حركة جانبية
+                            local randomDir = math.random(1, 2)
+                            if randomDir == 1 then
+                                humanoid:Move(Vector3.new(-5, 0, 0))
+                            else
+                                humanoid:Move(Vector3.new(5, 0, 0))
+                            end
+                        end
+                    end
+                end
+            end
+        end
+        
+        -- 3. حركة مستمرة لمنع الجلوس عليك
+        humanoid:Move(Vector3.new(
+            math.random(-1, 1) * 0.5,
+            0,
+            math.random(-1, 1) * 0.5
+        ))
+    end
+end)
+
+print("📱 Brookhaven Mobile Anti-Sit Loaded!")
+print("اضغط على الزر الأحمر/الأخضر لتفعيل النظام")
