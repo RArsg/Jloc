@@ -1,0 +1,272 @@
+-- ===========================================
+-- Brookhaven Anti-Freeze Script
+-- يحميك من التجميد، التباطؤ، وتأثيرات الحركة
+-- ===========================================
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Workspace = game:GetService("Workspace")
+
+local Player = Players.LocalPlayer
+local ANTI_FREEZE_ENABLED = true
+
+-- زر التحكم (F7)
+UserInputService.InputBegan:Connect(function(input)
+    if input.KeyCode == Enum.KeyCode.F7 then
+        ANTI_FREEZE_ENABLED = not ANTI_FREEZE_ENABLED
+        
+        if ANTI_FREEZE_ENABLED then
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = "❄️ Anti-Freeze",
+                Text = "مفعل - لن يتم تجميدك",
+                Duration = 3
+            })
+        else
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = "❄️ Anti-Freeze",
+                Text = "معطل",
+                Duration = 3
+            })
+        end
+    end
+end)
+
+-- دالة كشف وإزالة التجميد
+local function detectAndRemoveFreeze()
+    if not ANTI_FREEZE_ENABLED then return end
+    
+    local character = Player.Character
+    if not character then return end
+    
+    local humanoid = character:FindFirstChild("Humanoid")
+    if not humanoid then return end
+    
+    -- 1. كشف إذا Humanoid مجمد
+    if humanoid.WalkSpeed == 0 or humanoid.WalkSpeed < 16 then
+        humanoid.WalkSpeed = 16 -- سرعة المشي العادية
+        warn("⚠️ تم إزالة التباطؤ من WalkSpeed")
+    end
+    
+    if humanoid.JumpPower == 0 or humanoid.JumpPower < 50 then
+        humanoid.JumpPower = 50 -- قوة القفز العادية
+        warn("⚠️ تم إصلاح JumpPower")
+    end
+    
+    -- 2. كشف وإزالة الأدوات المسببة للتجميد
+    for _, tool in pairs(character:GetChildren()) do
+        if tool:IsA("Tool") then
+            -- بعض الأدوات في بروكهافن تسبب تجميد
+            if tool.Name:lower():find("freeze") or 
+               tool.Name:lower():find("ice") or
+               tool.Name:lower():find("slow") then
+                tool:Destroy()
+                warn("🗑️ تم تدمير أداة التجميد: " .. tool.Name)
+            end
+        end
+    end
+    
+    -- 3. كشف وإزالة الجسيمات المجمدة
+    for _, part in pairs(character:GetDescendants()) do
+        if part:IsA("ParticleEmitter") then
+            if part.Name:find("Ice") or part.Name:find("Freeze") then
+                part:Destroy()
+            end
+        end
+    end
+    
+    -- 4. كشف وإزالة Scripts تجميد
+    for _, script in pairs(character:GetDescendants()) do
+        if script:IsA("Script") or script:IsA("LocalScript") then
+            if script.Name:lower():find("freeze") or
+               script.Name:lower():find("slow") or
+               script.Name:lower():find("stun") then
+                script.Disabled = true
+                script:Destroy()
+                warn("🚫 تم تدمير سكريبت تجميد: " .. script.Name)
+            end
+        end
+    end
+    
+    -- 5. كشف وإزالة BodyVelocities مجمدة (تسبب تجميد)
+    for _, part in pairs(character:GetDescendants()) do
+        if part:IsA("BasePart") then
+            for _, force in pairs(part:GetChildren()) do
+                if force:IsA("BodyVelocity") then
+                    -- إذا السرعة قريبة من الصفر (تجميد)
+                    if force.Velocity.Magnitude < 1 then
+                        force:Destroy()
+                        warn("🧊 تم إزالة BodyVelocity مجمد")
+                    end
+                end
+            end
+        end
+    end
+end
+
+-- دالة منع التأثيرات البصرية للتجميد
+local function removeFreezeEffects()
+    local character = Player.Character
+    if not character then return end
+    
+    -- إزالة المواد الجليدية
+    for _, part in pairs(character:GetDescendants()) do
+        if part:IsA("BasePart") then
+            -- إذا اللون أزرق فاتح (تجميد)
+            if part.Color:lerp(Color3.fromRGB(0, 255, 255), 0.3) then
+                part.Color = Color3.fromRGB(255, 255, 255) -- إرجاع للون الطبيعي
+            end
+            
+            -- إذا المادة جليد
+            if part.Material == Enum.Material.Ice or 
+               part.Material == Enum.Material.Glass then
+                part.Material = Enum.Material.Plastic
+            end
+        end
+    end
+end
+
+-- دالة حماية من التجميد بالسحر/أنيميشن
+local function antiAnimationFreeze()
+    local character = Player.Character
+    if not character then return end
+    
+    local humanoid = character:FindFirstChild("Humanoid")
+    if not humanoid then return end
+    
+    -- إذا الأنيميشن يسبب تجميد
+    if humanoid.Animator then
+        for _, track in pairs(humanoid.Animator:GetPlayingAnimationTracks()) do
+            if track.Name:lower():find("freeze") or
+               track.Name:lower():find("stun") or
+               track.Name:lower():find("idle") then
+                track:Stop() -- إيقاف الأنيميشن
+                warn("🎬 تم إيقاف أنيميشن تجميد: " .. track.Name)
+            end
+        end
+    end
+end
+
+-- دالة استعادة الحركة الكاملة
+local function restoreFullMovement()
+    local character = Player.Character
+    if not character then return end
+    
+    local humanoid = character:FindFirstChild("Humanoid")
+    if not humanoid then return end
+    
+    -- قائمة السرعات الطبيعية لبروكهافن
+    humanoid.WalkSpeed = 16      -- سرعة مشي عادية
+    humanoid.JumpPower = 50      -- قوة قفز عادية
+    humanoid.AutoRotate = true   -- دوران تلقائي
+    humanoid.AutoJumpEnabled = true
+    
+    -- إزالة أي قيود حركة
+    humanoid.PlatformStand = false
+    humanoid.Sit = false
+    humanoid:ChangeState(Enum.HumanoidStateType.Running)
+end
+
+-- دالة كشف اللاعبين المجمدين لك
+local function detectPlayerFreezeAttackers()
+    for _, otherPlayer in pairs(Players:GetPlayers()) do
+        if otherPlayer ~= Player then
+            local tool = otherPlayer.Character and otherPlayer.Character:FindFirstChildWhichIsA("Tool")
+            if tool then
+                -- كشف أدوات التجميد المشهورة في بروكهافن
+                local freezeTools = {
+                    "Freeze Gun", "Ice Staff", "Frost Blade",
+                    "Slow Grenade", "Stun Baton", "Paralyzer"
+                }
+                
+                for _, freezeTool in pairs(freezeTools) do
+                    if tool.Name:find(freezeTool) then
+                        warn("🎯 " .. otherPlayer.Name .. " يهاجمك بأداة تجميد: " .. tool.Name)
+                        
+                        -- حماية تلقائية
+                        local char = Player.Character
+                        if char then
+                            local root = char:FindFirstChild("HumanoidRootPart")
+                            if root then
+                                -- قفز للخلف
+                                local humanoid = char:FindFirstChild("Humanoid")
+                                if humanoid then
+                                    humanoid.Jump = true
+                                    humanoid:Move(Vector3.new(0, 0, -10))
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+-- النظام الرئيسي
+RunService.Heartbeat:Connect(function()
+    if not ANTI_FREEZE_ENABLED then return end
+    
+    detectAndRemoveFreeze()
+    removeFreezeEffects()
+    antiAnimationFreeze()
+    restoreFullMovement()
+    detectPlayerFreezeAttackers()
+    
+    -- حماية إضافية: منع أي تغيير في سرعتك
+    local character = Player.Character
+    if character then
+        local humanoid = character:FindFirstChild("Humanoid")
+        if humanoid then
+            -- إذا حاول أحد تغيير سرعتك، ارجعها فوراً
+            if humanoid.WalkSpeed ~= 16 then
+                humanoid.WalkSpeed = 16
+            end
+            
+            -- منع وضع الجلوس القسري
+            if humanoid.Sit then
+                humanoid.Jump = true
+                wait(0.1)
+                humanoid.Sit = false
+                humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+            end
+        end
+    end
+end)
+
+-- حماية عند موت اللاعب
+Player.CharacterAdded:Connect(function(character)
+    wait(1) -- انتظار تحميل الشخصية
+    
+    if ANTI_FREEZE_ENABLED then
+        restoreFullMovement()
+        
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "🔄 Anti-Freeze",
+            Text = "تمت استعادة حركتك بعد الموت",
+            Duration = 3
+        })
+    end
+end)
+
+print("========================================")
+print("❄️ BROOKHAVEN ANTI-FREEZE SCRIPT LOADED")
+print("========================================")
+print("مميزات النظام:")
+print("1. يمنع تجميد شخصيتك")
+print("2. يزيل التباطؤ والقيود")
+print("3. يدمر أدوات التجميد")
+print("4. يحذف تأثيرات الجليد")
+print("5. يستعيد سرعتك الأصلية")
+print("6. يكشف المهاجمين بأدوات التجميد")
+print("")
+print("🎮 التحكم: اضغط F7 لتشغيل/إيقاف النظام")
+print("========================================")
+
+-- تشغيل فوري
+restoreFullMovement()
+game:GetService("StarterGui"):SetCore("SendNotification", {
+    Title = "❄️ Anti-Freeze",
+    Text = "جاهز! اضغط F7 للتحكم",
+    Duration = 5
+})
