@@ -27,7 +27,7 @@ up.Parent = Frame
 up.BackgroundColor3 = Color3.fromRGB(127, 255, 0)
 up.Size = UDim2.new(0, 44, 0, 28)
 up.Font = Enum.Font.SourceSans
-up.Text = "فوق"
+up.Text = "up"
 up.TextColor3 = Color3.fromRGB(0, 0, 0)
 up.TextSize = 14.000
 
@@ -37,7 +37,7 @@ down.BackgroundColor3 = Color3.fromRGB(127, 255, 0)
 down.Position = UDim2.new(0, 0, 0.491228074, 0)
 down.Size = UDim2.new(0, 44, 0, 28)
 down.Font = Enum.Font.SourceSans
-down.Text = "تحت"
+down.Text = "down"
 down.TextColor3 = Color3.fromRGB(0, 0, 0)
 down.TextSize = 14.000
 
@@ -47,7 +47,7 @@ onof.BackgroundColor3 = Color3.fromRGB(127, 255, 0)
 onof.Position = UDim2.new(0.702823281, 0, 0.491228074, 0)
 onof.Size = UDim2.new(0, 56, 0, 28)
 onof.Font = Enum.Font.SourceSans
-onof.Text = "طيران"
+onof.Text = "fly"
 onof.TextColor3 = Color3.fromRGB(0, 0, 0)
 onof.TextSize = 14.000
 
@@ -103,7 +103,7 @@ closebutton.Parent = main.Frame
 closebutton.BackgroundColor3 = Color3.fromRGB(127, 255, 0)
 closebutton.Font = "SourceSans"
 closebutton.Size = UDim2.new(0, 45, 0, 28)
-closebutton.Text = "قفل"
+closebutton.Text = ×"
 closebutton.TextSize = 30
 closebutton.Position =  UDim2.new(0, 0, -1, 27)
 
