@@ -1,150 +1,445 @@
---[[
-	WARNING: Heads up! This script has not been verified by ScriptBlox. Use at your own risk!
-]]
--- DELTA سكربت حساني - Compact Final Version 2025
-local screen = Instance.new("ScreenGui")
-local frame = Instance.new("Frame")
-local xButton = Instance.new("TextButton")
-local upButton = Instance.new("TextButton")
-local downButton = Instance.new("TextButton")
-local minus1Button = Instance.new("TextButton")
-local plusButton = Instance.new("TextButton")
-local minus2Button = Instance.new("TextButton")
-local speedText = Instance.new("TextBox")
-local flyButton = Instance.new("TextButton")
-local titleLabel = Instance.new("TextLabel")
+-- نظام الطيران EVERLAST - النسخة المميزة
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
 
--- Parent Setup
-screen.Parent = game.CoreGui
-frame.Parent = screen
-frame.Size = UDim2.new(0, 200, 0, 100) -- Small, compact size
-frame.Position = UDim2.new(0.8, -200, 0.4, 0) -- Positioned to the right side
-frame.BackgroundColor3 = Color3.fromRGB(150, 150, 150) -- Grey border color
-frame.Active = true
-frame.Draggable = true
+-- إنشاء واجهة التحكم
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "EVERLASTFlightControl"
+screenGui.Parent = game:GetService("CoreGui")
+screenGui.ResetOnSpawn = false
 
--- X Button (Red)
-xButton.Parent = frame
-xButton.Position = UDim2.new(0, 0, 0, 0)
-xButton.Size = UDim2.new(0.15, 0, 0.333, 0)
-xButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-xButton.Text = "X"
+-- إطار التحكم الرئيسي
+local controlFrame = Instance.new("Frame")
+controlFrame.Name = "ControlFrame"
+controlFrame.Parent = screenGui
+controlFrame.Size = UDim2.new(0, 250, 0, 180)
+controlFrame.Position = UDim2.new(0.7, 0, 0.6, 0)
+controlFrame.BackgroundColor3 = Color3.fromRGB(10, 30, 10) -- أخضر غامق
+controlFrame.BackgroundTransparency = 0.1
+controlFrame.BorderSizePixel = 3
+controlFrame.BorderColor3 = Color3.fromRGB(0, 255, 0) -- أخضر فاتح
+controlFrame.Active = true
+controlFrame.Draggable = true
 
--- Minus 1 Button (Purple) - Function: Decrease Speed by 10
-minus1Button.Parent = frame
-minus1Button.Position = UDim2.new(0.15, 0, 0, 0)
-minus1Button.Size = UDim2.new(0.2, 0, 0.333, 0)
-minus1Button.BackgroundColor3 = Color3.fromRGB(153, 102, 255)
-minus1Button.Text = "-"
+-- عنوان النظام
+local title = Instance.new("TextLabel")
+title.Name = "Title"
+title.Parent = controlFrame
+title.Size = UDim2.new(1, 0, 0.15, 0)
+title.Position = UDim2.new(0, 0, 0, 0)
+title.BackgroundColor3 = Color3.fromRGB(0, 80, 0) -- أخضر داكن
+title.Text = "طيران EVERLAST"
+title.TextColor3 = Color3.fromRGB(0, 255, 0) -- أخضر فاتح
+title.Font = Enum.Font.GothamBold
+title.TextSize = 18
 
--- سكربت حساني Title (Magenta)
-titleLabel.Parent = frame
-titleLabel.Position = UDim2.new(0.35, 0, 0, 0)
-titleLabel.Size = UDim2.new(0.65, 0, 0.666, 0)
-titleLabel.BackgroundColor3 = Color3.fromRGB(255, 0, 255)
-titleLabel.Text = ""
-titleLabel.Font = Enum.Font.GothamBold
-titleLabel.TextSize = 20 -- Slightly smaller text for compact size
-titleLabel.TextColor3 = Color3.fromRGB(0, 0, 0)
+-- منطقة التحكم في السرعة
+local speedFrame = Instance.new("Frame")
+speedFrame.Name = "SpeedFrame"
+speedFrame.Parent = controlFrame
+speedFrame.Size = UDim2.new(1, 0, 0.3, 0)
+speedFrame.Position = UDim2.new(0, 0, 0.15, 0)
+speedFrame.BackgroundTransparency = 1
 
--- UP Button (Green) - Function: Increase Speed by 10
-upButton.Parent = frame
-upButton.Position = UDim2.new(0, 0, 0.333, 0)
-upButton.Size = UDim2.new(0.15, 0, 0.333, 0)
-upButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-upButton.Text = "UP"
+-- عرض السرعة الحالية
+local speedDisplay = Instance.new("TextLabel")
+speedDisplay.Name = "SpeedDisplay"
+speedDisplay.Parent = speedFrame
+speedDisplay.Size = UDim2.new(0.4, 0, 1, 0)
+speedDisplay.Position = UDim2.new(0.3, 0, 0, 0)
+speedDisplay.BackgroundColor3 = Color3.fromRGB(0, 40, 0) -- أخضر داكن
+speedDisplay.Text = "السرعة: 50"
+speedDisplay.TextColor3 = Color3.fromRGB(0, 255, 0) -- أخضر فاتح
+speedDisplay.Font = Enum.Font.GothamBold
+speedDisplay.TextSize = 14
 
--- Plus Button (Blue) - Function: Increase Speed by 1
-plusButton.Parent = frame
-plusButton.Position = UDim2.new(0.15, 0, 0.333, 0)
-plusButton.Size = UDim2.new(0.2, 0, 0.333, 0)
-plusButton.BackgroundColor3 = Color3.fromRGB(102, 153, 255)
-plusButton.Text = "+"
+-- أزرار تغيير السرعة
+local speedUpBtn = Instance.new("TextButton")
+speedUpBtn.Name = "SpeedUp"
+speedUpBtn.Parent = speedFrame
+speedUpBtn.Size = UDim2.new(0.2, 0, 1, 0)
+speedUpBtn.Position = UDim2.new(0.7, 0, 0, 0)
+speedUpBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 0) -- أخضر
+speedUpBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+speedUpBtn.Text = "+"
+speedUpBtn.Font = Enum.Font.GothamBold
+speedUpBtn.TextSize = 20
 
--- DOWN Button (Cyan) - Function: Decrease Speed by 10
-downButton.Parent = frame
-downButton.Position = UDim2.new(0, 0, 0.666, 0)
-downButton.Size = UDim2.new(0.15, 0, 0.333, 0)
-downButton.BackgroundColor3 = Color3.fromRGB(0, 255, 255)
-downButton.Text = "DOWN"
+local speedDownBtn = Instance.new("TextButton")
+speedDownBtn.Name = "SpeedDown"
+speedDownBtn.Parent = speedFrame
+speedDownBtn.Size = UDim2.new(0.2, 0, 1, 0)
+speedDownBtn.Position = UDim2.new(0.1, 0, 0, 0)
+speedDownBtn.BackgroundColor3 = Color3.fromRGB(180, 0, 0) -- أحمر
+speedDownBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+speedDownBtn.Text = "-"
+speedDownBtn.Font = Enum.Font.GothamBold
+speedDownBtn.TextSize = 20
 
--- Minus 2 Button (Cyan) - Function: Decrease Speed by 1
-minus2Button.Parent = frame
-minus2Button.Position = UDim2.new(0.15, 0, 0.666, 0)
-minus2Button.Size = UDim2.new(0.2, 0, 0.333, 0)
-minus2Button.BackgroundColor3 = Color3.fromRGB(0, 255, 255)
-minus2Button.Text = "-"
+-- أزرار التحكم في الحركة
+local controlGrid = Instance.new("Frame")
+controlGrid.Name = "ControlGrid"
+controlGrid.Parent = controlFrame
+controlGrid.Size = UDim2.new(1, 0, 0.45, 0)
+controlGrid.Position = UDim2.new(0, 0, 0.45, 0)
+controlGrid.BackgroundTransparency = 1
 
--- Speed Input (Orange, default value 50)
-speedText.Parent = frame
-speedText.Position = UDim2.new(0.35, 0, 0.666, 0)
-speedText.Size = UDim2.new(0.2, 0, 0.333, 0)
-speedText.BackgroundColor3 = Color3.fromRGB(255, 153, 0)
-speedText.Text = "1"
-speedText.PlaceholderText = "S"
-speedText.TextColor3 = Color3.fromRGB(0, 0, 0)
+-- تعريف أزرار التحكم
+local controlButtons = {
+    Forward = {Text = "أمام", Position = UDim2.new(0.35, 0, 0, 0), Color = Color3.fromRGB(0, 150, 0)},
+    Left = {Text = "يسار", Position = UDim2.new(0, 0, 0.35, 0), Color = Color3.fromRGB(0, 120, 0)},
+    Right = {Text = "يمين", Position = UDim2.new(0.7, 0, 0.35, 0), Color = Color3.fromRGB(0, 120, 0)},
+    Backward = {Text = "خلف", Position = UDim2.new(0.35, 0, 0.7, 0), Color = Color3.fromRGB(0, 150, 0)},
+    Up = {Text = "أعلى", Position = UDim2.new(0.8, 0, 0, 0), Color = Color3.fromRGB(0, 200, 0), Size = UDim2.new(0.4, 0, 0.3, 0)},
+    Down = {Text = "أسفل", Position = UDim2.new(0.8, 0, 0.35, 0), Color = Color3.fromRGB(150, 0, 0), Size = UDim2.new(0.4, 0, 0.3, 0)}
+}
 
+local buttons = {}
 
--- Fly Button (Yellow)
-flyButton.Parent = frame
-flyButton.Position = UDim2.new(0.55, 0, 0.666, 0)
-flyButton.Size = UDim2.new(0.45, 0, 0.333, 0)
-flyButton.BackgroundColor3 = Color3.fromRGB(255, 255, 0)
-flyButton.Text = "fly"
-flyButton.TextColor3 = Color3.fromRGB(0, 0, 0)
+for name, config in pairs(controlButtons) do
+    local btn = Instance.new("TextButton")
+    btn.Name = name
+    btn.Parent = controlGrid
+    btn.Size = config.Size or UDim2.new(0.3, 0, 0.3, 0)
+    btn.Position = config.Position
+    btn.BackgroundColor3 = config.Color
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Text = config.Text
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 12
+    btn.BorderSizePixel = 2
+    btn.BorderColor3 = Color3.fromRGB(0, 80, 0) -- حدود خضراء
+    
+    -- تأثير الضغط
+    btn.MouseButton1Down:Connect(function()
+        btn.BackgroundColor3 = Color3.fromRGB(255, 255, 100) -- أصفر عند الضغط
+        btn.TextColor3 = Color3.fromRGB(0, 0, 0)
+    end)
+    
+    btn.MouseButton1Up:Connect(function()
+        btn.BackgroundColor3 = config.Color
+        btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    end)
+    
+    buttons[name] = btn
+end
 
+-- زر تفعيل/إلغاء الطيران
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Name = "ToggleFlight"
+toggleBtn.Parent = controlFrame
+toggleBtn.Size = UDim2.new(0.9, 0, 0.1, 0)
+toggleBtn.Position = UDim2.new(0.05, 0, 0.9, 0)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0) -- أخضر
+toggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleBtn.Text = "تفعيل الطيران"
+toggleBtn.Font = Enum.Font.GothamBold
+toggleBtn.TextSize = 14
 
--- Logic Implementation (Same reliable logic as before)
-local player = game.Players.LocalPlayer
-local char = player.Character or player.CharacterAdded:Wait()
-local root = char:WaitForChild("HumanoidRootPart")
-local flying = false
-local bv = Instance.new("BodyVelocity")
-local bg = Instance.new("BodyGyro")
+-- زر الإغلاق
+local closeBtn = Instance.new("TextButton")
+closeBtn.Name = "Close"
+closeBtn.Parent = screenGui
+closeBtn.Size = UDim2.new(0, 40, 0, 40)
+closeBtn.Position = UDim2.new(0.7, 210, 0.6, 0)
+closeBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50) -- أحمر
+closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeBtn.Text = "✕"
+closeBtn.Font = Enum.Font.GothamBold
+closeBtn.TextSize = 20
 
-bv.MaxForce = Vector3.new(9e9, 9e9, 9e9)
-bg.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
-bg.P = 90000
+-- متغيرات نظام الطيران
+local isFlying = false
+local currentSpeed = 50
+local flightBodyVelocity = nil
+local flightBodyGyro = nil
 
-local function updateVelocity()
-    if flying and char and root then
-        local speed = tonumber(speedText.Text) or 50
-        bg.CFrame = workspace.CurrentCamera.CFrame
-        char.Humanoid.PlatformStand = true
-        
-        local moveDir = char.Humanoid.MoveDirection
-        if moveDir.Magnitude > 0 then
-            bv.Velocity = workspace.CurrentCamera.CFrame.LookVector * speed
-        else
-            bv.Velocity = Vector3.new(0, 0.1, 0) 
-        end
+-- متغيرات التحكم
+local moveForward = false
+local moveBackward = false
+local moveLeft = false
+local moveRight = false
+local moveUp = false
+local moveDown = false
+
+-- تحديث عرض السرعة
+local function updateSpeedDisplay()
+    speedDisplay.Text = "السرعة: " .. currentSpeed
+end
+
+-- تهيئة نظام الطيران
+local function setupFlightSystem()
+    local character = player.Character or player.CharacterAdded:Wait()
+    local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+    
+    -- إنشاء أدوات الطيران
+    flightBodyVelocity = Instance.new("BodyVelocity")
+    flightBodyVelocity.Name = "FlightVelocity"
+    flightBodyVelocity.MaxForce = Vector3.new(40000, 40000, 40000)
+    flightBodyVelocity.P = 10000
+    
+    flightBodyGyro = Instance.new("BodyGyro")
+    flightBodyGyro.Name = "FlightGyro"
+    flightBodyGyro.MaxTorque = Vector3.new(40000, 40000, 40000)
+    flightBodyGyro.P = 10000
+    
+    return humanoidRootPart
+end
+
+-- تفعيل الطيران
+local function activateFlight(rootPart)
+    isFlying = true
+    toggleBtn.BackgroundColor3 = Color3.fromRGB(0, 255, 0) -- أخضر فاتح
+    toggleBtn.Text = "الطيران مفعل"
+    
+    -- تثبيت أدوات الطيران
+    flightBodyVelocity.Parent = rootPart
+    flightBodyGyro.Parent = rootPart
+    
+    -- تعطيل الجاذبية على الشخصية
+    local humanoid = player.Character:FindFirstChild("Humanoid")
+    if humanoid then
+        humanoid.PlatformStand = true
+    end
+    
+    -- إضافة قوة مضادة للجاذبية
+    local antiGravity = Instance.new("BodyForce")
+    antiGravity.Name = "AntiGravity"
+    antiGravity.Force = Vector3.new(0, workspace.Gravity * player.Character:GetMass(), 0)
+    antiGravity.Parent = rootPart
+    
+    -- إشعار التفعيل
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "طيران EVERLAST",
+        Text = "تم تفعيل نظام الطيران",
+        Duration = 3
+    })
+end
+
+-- إلغاء الطيران
+local function deactivateFlight(rootPart)
+    isFlying = false
+    toggleBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0) -- أخضر
+    toggleBtn.Text = "تفعيل الطيران"
+    
+    -- إزالة أدوات الطيران
+    flightBodyVelocity.Parent = nil
+    flightBodyGyro.Parent = nil
+    
+    -- إعادة تفعيل الجاذبية
+    local humanoid = player.Character:FindFirstChild("Humanoid")
+    if humanoid then
+        humanoid.PlatformStand = false
+    end
+    
+    -- إزالة القوة المضادة للجاذبية
+    local antiGravity = rootPart:FindFirstChild("AntiGravity")
+    if antiGravity then
+        antiGravity:Destroy()
+    end
+    
+    -- إعادة تعيين متغيرات الحركة
+    moveForward = false
+    moveBackward = false
+    moveLeft = false
+    moveRight = false
+    moveUp = false
+    moveDown = false
+    
+    -- إعادة تعيين ألوان الأزرار
+    for name, btn in pairs(buttons) do
+        btn.BackgroundColor3 = controlButtons[name].Color
     end
 end
 
-game:GetService("RunService").RenderStepped:Connect(updateVelocity)
+-- تحكم الأزرار
+buttons.Forward.MouseButton1Down:Connect(function() moveForward = true end)
+buttons.Forward.MouseButton1Up:Connect(function() moveForward = false end)
 
-flyButton.MouseButton1Click:Connect(function()
-    flying = not flying
-    if flying then
-        flyButton.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
-        bv.Parent = root
-        bg.Parent = root
-    else
-        flyButton.BackgroundColor3 = Color3.fromRGB(255, 255, 0)
-        bv.Parent = nil
-        bg.Parent = nil
-        char.Humanoid.PlatformStand = false
+buttons.Backward.MouseButton1Down:Connect(function() moveBackward = true end)
+buttons.Backward.MouseButton1Up:Connect(function() moveBackward = false end)
+
+buttons.Left.MouseButton1Down:Connect(function() moveLeft = true end)
+buttons.Left.MouseButton1Up:Connect(function() moveLeft = false end)
+
+buttons.Right.MouseButton1Down:Connect(function() moveRight = true end)
+buttons.Right.MouseButton1Up:Connect(function() moveRight = false end)
+
+buttons.Up.MouseButton1Down:Connect(function() moveUp = true end)
+buttons.Up.MouseButton1Up:Connect(function() moveUp = false end)
+
+buttons.Down.MouseButton1Down:Connect(function() moveDown = true end)
+buttons.Down.MouseButton1Up:Connect(function() moveDown = false end)
+
+-- تحكم لوحة المفاتيح
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    
+    if input.KeyCode == Enum.KeyCode.W then
+        moveForward = true
+    elseif input.KeyCode == Enum.KeyCode.S then
+        moveBackward = true
+    elseif input.KeyCode == Enum.KeyCode.A then
+        moveLeft = true
+    elseif input.KeyCode == Enum.KeyCode.D then
+        moveRight = true
+    elseif input.KeyCode == Enum.KeyCode.Space then
+        moveUp = true
+    elseif input.KeyCode == Enum.KeyCode.LeftControl then
+        moveDown = true
     end
 end)
 
-xButton.MouseButton1Click:Connect(function()
-    if flying then flyButton.MouseButton1Click:Invoke() end
-    frame:Destroy()
+UserInputService.InputEnded:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    
+    if input.KeyCode == Enum.KeyCode.W then
+        moveForward = false
+    elseif input.KeyCode == Enum.KeyCode.S then
+        moveBackward = false
+    elseif input.KeyCode == Enum.KeyCode.A then
+        moveLeft = false
+    elseif input.KeyCode == Enum.KeyCode.D then
+        moveRight = false
+    elseif input.KeyCode == Enum.KeyCode.Space then
+        moveUp = false
+    elseif input.KeyCode == Enum.KeyCode.LeftControl then
+        moveDown = false
+    end
 end)
 
--- Speed adjustment buttons logic
-upButton.MouseButton1Click:Connect(function() speedText.Text = tostring( (tonumber(speedText.Text) or 1) + 10 ) end)
-minus1Button.MouseButton1Click:Connect(function() speedText.Text = tostring( math.max(1, (tonumber(speedText.Text) or 1) - 10) ) end)
-plusButton.MouseButton1Click:Connect(function() speedText.Text = tostring( (tonumber(speedText.Text) or 1) + 1 ) end)
-downButton.MouseButton1Click:Connect(function() speedText.Text = tostring( math.max(1, (tonumber(speedText.Text) or 1) - 10) ) end)
-minus2Button.MouseButton1Click:Connect(function() speedText.Text = tostring( math.max(1, (tonumber(speedText.Text) or 1) - 1) ) end)
+-- تحديث السرعة
+speedUpBtn.MouseButton1Click:Connect(function()
+    currentSpeed = math.min(currentSpeed + 5, 200)
+    updateSpeedDisplay()
+end)
+
+speedDownBtn.MouseButton1Click:Connect(function()
+    currentSpeed = math.max(currentSpeed - 5, 5)
+    updateSpeedDisplay()
+end)
+
+-- تفعيل/إلغاء الطيران
+local rootPart = setupFlightSystem()
+toggleBtn.MouseButton1Click:Connect(function()
+    if isFlying then
+        deactivateFlight(rootPart)
+    else
+        activateFlight(rootPart)
+    end
+end)
+
+-- تحديث حركة الطيران
+local flightUpdateConnection = RunService.Heartbeat:Connect(function(delta)
+    if not isFlying or not flightBodyVelocity or not flightBodyGyro then return end
+    
+    local character = player.Character
+    if not character then return end
+    
+    local root = character:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+    
+    -- الحصول على اتجاه الكاميرا
+    local camera = workspace.CurrentCamera
+    local cameraCFrame = camera.CFrame
+    
+    -- حساب اتجاه الحركة
+    local moveDirection = Vector3.new(0, 0, 0)
+    
+    -- أمام/خلف بالنسبة للكاميرا
+    if moveForward then
+        moveDirection = moveDirection + cameraCFrame.LookVector
+    end
+    if moveBackward then
+        moveDirection = moveDirection - cameraCFrame.LookVector
+    end
+    
+    -- يمين/يسار بالنسبة للكاميرا
+    if moveRight then
+        moveDirection = moveDirection + cameraCFrame.RightVector
+    end
+    if moveLeft then
+        moveDirection = moveDirection - cameraCFrame.RightVector
+    end
+    
+    -- أعلى/أسفل
+    if moveUp then
+        moveDirection = moveDirection + Vector3.new(0, 1, 0)
+    end
+    if moveDown then
+        moveDirection = moveDirection - Vector3.new(0, 1, 0)
+    end
+    
+    -- تطبيع الاتجاه وتطبيق السرعة
+    if moveDirection.Magnitude > 0 then
+        moveDirection = moveDirection.Unit * currentSpeed
+    else
+        -- تثبيت في المكان إذا لم يكن هناك حركة
+        moveDirection = Vector3.new(0, 0.1, 0) -- بقاء معلق في الهواء
+    end
+    
+    -- تطبيق السرعة
+    flightBodyVelocity.Velocity = moveDirection
+    
+    -- توجيه الشخصية مع الكاميرا
+    flightBodyGyro.CFrame = CFrame.new(root.Position, root.Position + cameraCFrame.LookVector)
+    
+    -- تحديث ألوان الأزرار بناءً على الحالة
+    buttons.Forward.BackgroundColor3 = moveForward and Color3.fromRGB(0, 255, 100) or Color3.fromRGB(0, 150, 0)
+    buttons.Backward.BackgroundColor3 = moveBackward and Color3.fromRGB(0, 255, 100) or Color3.fromRGB(0, 150, 0)
+    buttons.Left.BackgroundColor3 = moveLeft and Color3.fromRGB(0, 255, 100) or Color3.fromRGB(0, 120, 0)
+    buttons.Right.BackgroundColor3 = moveRight and Color3.fromRGB(0, 255, 100) or Color3.fromRGB(0, 120, 0)
+    buttons.Up.BackgroundColor3 = moveUp and Color3.fromRGB(0, 255, 100) or Color3.fromRGB(0, 200, 0)
+    buttons.Down.BackgroundColor3 = moveDown and Color3.fromRGB(255, 100, 100) or Color3.fromRGB(150, 0, 0)
+end)
+
+-- معالجة إعادة ظهور الشخصية
+player.CharacterAdded:Connect(function(character)
+    task.wait(1) -- انتظار تحميل الشخصية
+    rootPart = character:WaitForChild("HumanoidRootPart")
+    
+    if isFlying then
+        deactivateFlight(rootPart)
+        activateFlight(rootPart)
+    end
+end)
+
+-- زر الإغلاق
+closeBtn.MouseButton1Click:Connect(function()
+    if isFlying then
+        deactivateFlight(rootPart)
+    end
+    
+    flightUpdateConnection:Disconnect()
+    screenGui:Destroy()
+    
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "طيران EVERLAST",
+        Text = "تم إغلاق النظام",
+        Duration = 3
+    })
+end)
+
+-- إضافة تأثير إضاءة للواجهة
+local glowEffect = Instance.new("UIStroke")
+glowEffect.Parent = controlFrame
+glowEffect.Color = Color3.fromRGB(0, 255, 0)
+glowEffect.Thickness = 2
+glowEffect.Transparency = 0.5
+
+-- إضافة تأثير التوهج للعنوان
+local titleGlow = Instance.new("UIStroke")
+titleGlow.Parent = title
+titleGlow.Color = Color3.fromRGB(0, 255, 0)
+titleGlow.Thickness = 2
+
+-- إشعار البدء
+game:GetService("StarterGui"):SetCore("SendNotification", {
+    Title = "نظام الطيران EVERLAST",
+    Text = "تم تفعيل نظام التحكم المميز\nاستخدم الأزرار أو مفاتيح W/A/S/D/Space/Ctrl",
+    Duration = 5
+})
+
+print("نظام الطيران EVERLAST مفعل!")
